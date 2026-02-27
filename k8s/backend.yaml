@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: breedgrade
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: REPLACE_WITH_ECR_URI/breedgrade-backend:latest
+          ports:
+            - containerPort: 8001
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: breedgrade-secrets
+                  key: MONGO_URL
+            - name: DB_NAME
+              value: boerboel_eval
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8001
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: breedgrade
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 8001
+      targetPort: 8001
+  type: ClusterIP

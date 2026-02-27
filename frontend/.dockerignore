@@ -1,0 +1,12 @@
+node_modules
+build
+.git
+.gitignore
+Dockerfile
+.dockerignore
+README.md
+.env.local
+.env.development
+.env.test
+npm-debug.log
+yarn-error.log
